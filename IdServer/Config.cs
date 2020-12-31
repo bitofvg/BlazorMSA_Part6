@@ -19,12 +19,32 @@ namespace IdServer {
             }
         };
 
+    public static IEnumerable<ApiResource> ApiResources =>
+       new List<ApiResource> {
+          new ApiResource("WApi1") {
+              Scopes = {
+                "WApi1.Weather.GetById",
+                "WApi1.Weather.List",
+                "WApi1.Weather.Insert",
+                "WApi1.Weather.Update",
+                "WApi1.Weather.Delete",
+              }
+          },
+          new ApiResource("WApiFAKE") {
+              Scopes = {
+                "WApi1.Weather.List",
+              }
+          },
+      };
+
     public static IEnumerable<ApiScope> ApiScopes =>
-        new ApiScope[]
-        {
-                new ApiScope("scope1"),
-                new ApiScope("scope2"),
-        };
+      new ApiScope[] {
+        new ApiScope("WApi1.Weather.GetById"),
+        new ApiScope("WApi1.Weather.List"),
+        new ApiScope("WApi1.Weather.Insert"),
+        new ApiScope("WApi1.Weather.Update"),
+        new ApiScope("WApi1.Weather.Delete"),
+      };
 
     public static IEnumerable<Client> Clients =>
         new Client[]
@@ -42,6 +62,7 @@ namespace IdServer {
               "openid", "profile",
               "email", "phone",
               "my_nice_scope",
+              "WApi1.Weather.List"
             },
             RedirectUris = { "https://localhost:5001/authentication/login-callback" },
             PostLogoutRedirectUris = { "https://localhost:5001/" },
