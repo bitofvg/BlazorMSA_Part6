@@ -23,9 +23,12 @@ namespace BlazorClient1
             {
               // load Oidc options for the Identity Server authentication.
               builder.Configuration.Bind("oidc", options.ProviderOptions);
-            });
+              // get the roles from the claims named "role"
+              options.UserOptions.RoleClaim = "role";
+            })
+            .AddAccountClaimsPrincipalFactory<CustomUserFactory>();
 
-            await builder.Build().RunAsync();
+      await builder.Build().RunAsync();
         }
     }
 }
