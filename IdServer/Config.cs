@@ -8,13 +8,16 @@ using System.Collections.Generic;
 namespace IdServer {
   public static class Config {
     public static IEnumerable<IdentityResource> IdentityResources =>
-               new IdentityResource[]
-               {
-                new IdentityResources.OpenId(),
-                new IdentityResources.Profile(),
-                new IdentityResources.Email(),
-                new IdentityResources.Phone(),
-               };
+        new IdentityResource[] {
+          new IdentityResources.OpenId(),
+          new IdentityResources.Profile(),
+          new IdentityResources.Email(),
+          new IdentityResources.Phone(),
+          new IdentityResource {
+              Name="my_nice_scope",
+              UserClaims = new List<string> { "my_nice_claim_1", "my_nice_claim_2" }
+            }
+        };
 
     public static IEnumerable<ApiScope> ApiScopes =>
         new ApiScope[]
@@ -35,9 +38,10 @@ namespace IdServer {
             RequirePkce = true,
             RequireClientSecret = false,
             AllowedCorsOrigins = { "https://localhost:5001" },
-            AllowedScopes = { 
-              "openid", "profile", 
-              "email", "phone" 
+            AllowedScopes = {
+              "openid", "profile",
+              "email", "phone",
+              "my_nice_scope",
             },
             RedirectUris = { "https://localhost:5001/authentication/login-callback" },
             PostLogoutRedirectUris = { "https://localhost:5001/" },
