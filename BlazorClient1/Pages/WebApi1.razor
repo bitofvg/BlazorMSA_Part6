@@ -1,40 +1,63 @@
 ﻿@page "/webapi1"
 @inject IHttpClientFactory ClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <h4>Weather forecast from <b>WebApi1</b></h4>
 
-@if (forecasts == null) {
-  <p><em>Loading...</em></p>
-}
-else {
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Temp. (C)</th>
-        <th>Temp. (F)</th>
-        <th>Summary</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach (var forecast in forecasts) {
-        <tr>
-          <td>@forecast.Date.ToShortDateString()</td>
-          <td>@forecast.TemperatureC</td>
-          <td>@forecast.TemperatureF</td>
-          <td>@forecast.Summary</td>
-        </tr>
-      }
-    </tbody>
-  </table>
-}
+<AuthorizeView Policy="WebApi_List">
+  <NotAuthorized>
+    <p>Sorry you are not authorized to WebApi1</p>
+  </NotAuthorized>
+  <Authorized>
+    @if (forecasts == null) {
+      <p><em>@LoadMsg</em></p>
+    }
+    else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Temp. (C)</th>
+            <th>Temp. (F)</th>
+            <th>Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var forecast in forecasts) {
+            <tr>
+              <td>@forecast.Date.ToShortDateString()</td>
+              <td>@forecast.TemperatureC</td>
+              <td>@forecast.TemperatureF</td>
+              <td>@forecast.Summary</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </Authorized>
+</AuthorizeView>
 
 @code {
   private WeatherForecast[] forecasts;
+  private string LoadMsg = "Working hard... ";
 
   protected override async Task OnInitializedAsync() {
-    var HttpClient = ClientFactory.CreateClient("WebApi1HttpClient");
-    forecasts = await HttpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:5101/WeatherForecast");
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+    if (user.Identity.IsAuthenticated) {
+      var HttpClient = ClientFactory.CreateClient("WebApi1HttpClient");
+      try {
+        forecasts = await HttpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:5101/WeatherForecast");
+      }
+      catch {
+        forecasts = null;
+        LoadMsg = "Unauthorized user!";
+      };
+    }
+
+
+
+
   }
 
   public class WeatherForecast {

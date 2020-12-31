@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 namespace WebApi1.Controllers {
   [ApiController]
   [Route("[controller]")]
-  [Authorize]
+  [Authorize(Roles = "BlazorClient1_Admin, BlazorClient1_Superuser")]
+
   public class WeatherForecastController : ControllerBase {
     private static readonly string[] Summaries = new[]
     {
