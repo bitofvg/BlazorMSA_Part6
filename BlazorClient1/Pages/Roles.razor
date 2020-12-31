@@ -1,0 +1,29 @@
+﻿@page "/roles"
+
+  <AuthorizeView Roles="BlazorClient1_Admin">
+    <Authorized>
+      <p><b>I'm a BlazorClient1_Admin</b></p>
+    </Authorized>
+    <NotAuthorized>
+      <p><b>I'm NOT a BlazorClient1_Admin</b></p>
+    </NotAuthorized>
+  </AuthorizeView>
+
+  <AuthorizeView Roles="BlazorClient1_User">
+    <Authorized>
+      <p><b>I'm a BlazorClient1_User</b></p>
+    </Authorized>
+    <NotAuthorized>
+      <p><b>I'm NOT a BlazorClient1_User</b></p>
+    </NotAuthorized>
+  </AuthorizeView>
+
+  <AuthorizeView Roles="BlazorClient1_Admin, BlazorClient1_User">
+    <Authorized>
+      <p><b>I'm a BlazorClient1_User OR a BlazorClient1_Admin</b></p>
+    </Authorized>
+    <NotAuthorized>
+      <p><b>I'm NOT a BlazorClient1_User NEITHER a BlazorClient1_Admin</b></p>
+    </NotAuthorized>
+  </AuthorizeView>
+
