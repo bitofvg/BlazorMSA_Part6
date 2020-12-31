@@ -28,12 +28,14 @@ namespace IdServer {
                 "WApi1.Weather.Insert",
                 "WApi1.Weather.Update",
                 "WApi1.Weather.Delete",
-              }
+              },
+              UserClaims =  { "name", "email" }
           },
           new ApiResource("WApiFAKE") {
               Scopes = {
                 "WApi1.Weather.List",
-              }
+              },
+              UserClaims =  { "name", "website" }
           },
       };
 
