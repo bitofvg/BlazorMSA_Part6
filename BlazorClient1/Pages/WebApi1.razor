@@ -1,5 +1,5 @@
 ﻿@page "/webapi1"
-@inject HttpClient Http
+@inject IHttpClientFactory ClientFactory
 
 <h4>Weather forecast from <b>WebApi1</b></h4>
 
@@ -33,8 +33,8 @@ else {
   private WeatherForecast[] forecasts;
 
   protected override async Task OnInitializedAsync() {
-    forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>
-                  ("https://localhost:5101/WeatherForecast");
+    var HttpClient = ClientFactory.CreateClient("WebApi1HttpClient");
+    forecasts = await HttpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:5101/WeatherForecast");
   }
 
   public class WeatherForecast {

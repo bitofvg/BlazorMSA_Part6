@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 namespace BlazorClient1
 {
@@ -18,6 +19,19 @@ namespace BlazorClient1
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+            // We register a named HttpClient here for the WebApi1
+            builder.Services.AddHttpClient("WebApi1HttpClient")
+                .AddHttpMessageHandler(sp => {
+                  var handler = sp.GetService<AuthorizationMessageHandler>()
+                                  .ConfigureHandler(
+                                    authorizedUrls: new[] { "https://localhost:5101" }, // WebApi
+                                    scopes: new[] { "WApi1.Weather.List", }
+                                  );
+                  return handler;
+                });
+            builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>().CreateClient("WebApi1Client"));
+
 
             builder.Services.AddOidcAuthentication(options =>
             {
