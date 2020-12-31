@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace WebApi1.Controllers {
   [ApiController]
   [Route("[controller]")]
-  [Authorize(Roles = "BlazorClient1_Admin, BlazorClient1_Superuser")]
+  [Authorize(Roles = "BlazorClient1_Admin, BlazorClient1_User")]
 
   public class WeatherForecastController : ControllerBase {
     private static readonly string[] Summaries = new[]
@@ -24,6 +24,7 @@ namespace WebApi1.Controllers {
     }
 
     [HttpGet]
+    [Authorize(Policy = "ListPolicy")]
     public IEnumerable<WeatherForecast> Get() {
       var rng = new Random();
       return Enumerable.Range(1, 5).Select(index => new WeatherForecast {

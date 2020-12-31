@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -40,6 +41,11 @@ namespace WebApi1 {
           //};
         });
 
+      services.AddAuthorization(options => {
+        options.AddPolicy("ListPolicy", policyAdmin => {
+          policyAdmin.RequireScope("WApi1.Weather.List");
+        });
+      });
 
       services.AddCors(options => { // this defines a CORS policy called "CORSPolicy"
         options.AddPolicy("CORSPolicy", builder => {
@@ -49,6 +55,9 @@ namespace WebApi1 {
       });
 
     }
+
+
+
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
