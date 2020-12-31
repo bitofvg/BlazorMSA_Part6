@@ -40,7 +40,10 @@ namespace IdServer {
     public static IEnumerable<ApiScope> ApiScopes =>
       new ApiScope[] {
         new ApiScope("WApi1.Weather.GetById"),
-        new ApiScope("WApi1.Weather.List"),
+        new ApiScope(){ 
+          Name ="WApi1.Weather.List",
+          UserClaims = { "my_nice_claim_3", "my_nice_claim_2" }
+        },
         new ApiScope("WApi1.Weather.Insert"),
         new ApiScope("WApi1.Weather.Update"),
         new ApiScope("WApi1.Weather.Delete"),
