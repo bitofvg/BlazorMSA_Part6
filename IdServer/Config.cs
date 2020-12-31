@@ -12,6 +12,8 @@ namespace IdServer {
                {
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
+                new IdentityResources.Email(),
+                new IdentityResources.Phone(),
                };
 
     public static IEnumerable<ApiScope> ApiScopes =>
@@ -33,7 +35,10 @@ namespace IdServer {
             RequirePkce = true,
             RequireClientSecret = false,
             AllowedCorsOrigins = { "https://localhost:5001" },
-            AllowedScopes = { "openid", "profile" },
+            AllowedScopes = { 
+              "openid", "profile", 
+              "email", "phone" 
+            },
             RedirectUris = { "https://localhost:5001/authentication/login-callback" },
             PostLogoutRedirectUris = { "https://localhost:5001/" },
             Enabled = true
