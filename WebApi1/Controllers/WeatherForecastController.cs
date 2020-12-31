@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 namespace WebApi1.Controllers {
   [ApiController]
   [Route("[controller]")]
+  [Authorize]
   public class WeatherForecastController : ControllerBase {
     private static readonly string[] Summaries = new[]
     {

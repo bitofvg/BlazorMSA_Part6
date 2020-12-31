@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -28,6 +29,18 @@ namespace WebApi1 {
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApi1", Version = "v1" });
       });
 
+      services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options => {
+          options.Authority = "https://localhost:5020";
+          // the requested ApiScopes MUST belong to the ApiResource "WApi1"
+          options.Audience = "WApi1";
+          //To avoid Audience verify:
+          //options.TokenValidationParameters = new TokenValidationParameters {
+          //  ValidateAudience = false
+          //};
+        });
+
+
       services.AddCors(options => { // this defines a CORS policy called "CORSPolicy"
         options.AddPolicy("CORSPolicy", builder => {
           builder.WithOrigins("https://localhost:5001")
@@ -51,6 +64,9 @@ namespace WebApi1 {
 
       app.UseCors("CORSPolicy"); // This MUST be placed after "app.UseRouting();"
 
+      //authentication will be performed automatically on every call
+      app.UseAuthentication();
+      //endpoint cannot be accessed by anonymous clients.
       app.UseAuthorization();
 
       app.UseEndpoints(endpoints => {
