@@ -42,6 +42,25 @@ namespace IdServer {
       // Add roles
       retclaims.AddRange(nameClaims.Where(claim => claim.Type=="role").ToList());
 
+      if (_userManager.SupportsUserRole) {
+        // Get roles list
+        IList<string> roles = await _userManager.GetRolesAsync(user);
+        foreach (var rolename in roles) {
+          if (_roleManager.SupportsRoleClaims) {
+            // Get role
+            IdentityRole role = await _roleManager.FindByNameAsync(rolename);
+            if (role != null) {
+              // Get role claims
+              var roleclaims = await _roleManager.GetClaimsAsync(role);
+              // Filter user role principalclaims
+              var userRoleClaims = nameClaims.Where(claim => roleclaims.Where(rc => rc.Type == claim.Type && rc.Value == claim.Value).Any()).ToList();
+              // Add user role claims
+              retclaims.AddRange(userRoleClaims);
+            }
+          }
+        }
+      }
+
       //return only the requested claims + roles 
       context.IssuedClaims.AddRange(retclaims);
     }
