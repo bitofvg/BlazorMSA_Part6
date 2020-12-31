@@ -45,7 +45,8 @@ namespace IdServer {
           .AddInMemoryIdentityResources(Config.IdentityResources)
           .AddInMemoryApiScopes(Config.ApiScopes)
           .AddInMemoryClients(Config.Clients)
-          .AddAspNetIdentity<ApplicationUser>();
+          .AddAspNetIdentity<ApplicationUser>()
+          .AddProfileService<ProfileService>();
 
       // not recommended for production - you need to store your key material somewhere secure
       builder.AddDeveloperSigningCredential();
