@@ -28,7 +28,15 @@ namespace BlazorClient1
             })
             .AddAccountClaimsPrincipalFactory<CustomUserFactory>();
 
-      await builder.Build().RunAsync();
+
+            builder.Services.AddAuthorizationCore(options => {
+              options.AddPolicy("WebApi_List", policy => policy.RequireClaim("WebApi1.List", "true"));
+              options.AddPolicy("WebApi_Update", policy => policy.RequireClaim("WebApi1.Update", "true"));
+              options.AddPolicy("WebApi_Delete", policy => policy.RequireClaim("WebApi1.Delete", "true"));
+            });
+
+
+            await builder.Build().RunAsync();
         }
     }
 }

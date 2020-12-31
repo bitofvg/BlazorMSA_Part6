@@ -1,0 +1,47 @@
+﻿@page "/policies"
+
+
+  <AuthorizeView Policy="WebApi_List">
+    <Authorized>
+      <p>I can call List from WebApi1</p>
+    </Authorized>
+    <NotAuthorized>
+      <p>I can't call List from WebApi1</p>
+    </NotAuthorized>
+  </AuthorizeView>
+
+  <AuthorizeView Policy="WebApi_Update">
+    <Authorized>
+      <p>I can call Update from WebApi1</p>
+    </Authorized>
+    <NotAuthorized>
+      <p>I can't call Update from WebApi1</p>
+    </NotAuthorized>
+  </AuthorizeView>
+
+  <AuthorizeView Roles="BlazorClient1_User" Policy="WebApi_List">
+    <Authorized>
+      <p>I'm a BlazorClient1_User AND I can call List from WebApi1</p>
+    </Authorized>
+    <NotAuthorized>
+      <p>I'm NOT a BlazorClient1_User OR I can't call List from WebApi1</p>
+    </NotAuthorized>
+  </AuthorizeView>
+
+  <AuthorizeView Roles="BlazorClient1_Admin" Policy="WebApi_Update">
+    <Authorized>
+      <p>I'm a BlazorClient1_Admin AND I can call Update from WebApi1</p>
+    </Authorized>
+    <NotAuthorized>
+      <p>I'm NOT a BlazorClient1_Admin OR I can't call Update from WebApi1</p>
+    </NotAuthorized>
+  </AuthorizeView>
+
+  <AuthorizeView Roles="BlazorClient1_Admin, BlazorClient1_User" Policy="WebApi_Delete">
+    <Authorized>
+      <p>I'm a (BlazorClient1_Admin OR BlazorClient1_User) AND I can call Delete from WebApi1</p>
+    </Authorized>
+    <NotAuthorized>
+      <p>I'm NOT a (BlazorClient1_Admin AND BlazorClient1_User) OR I can't call Delete from WebApi1</p>
+    </NotAuthorized>
+  </AuthorizeView>
