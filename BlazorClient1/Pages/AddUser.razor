@@ -1,0 +1,53 @@
+﻿@page "/adduser"
+@inject IHttpClientFactory ClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h4><b>Add user:</b></h4>
+
+<AuthorizeView Context="Ctx">
+  <NotAuthorized>
+    <p>Sorry you are not authorized to localApi1</p>
+  </NotAuthorized>
+  <Authorized>
+    <EditForm Model="@Model" OnSubmit="@FormSubmitted">
+      <InputText placeholder="User Name" @bind-Value="Model.UserName" />
+      <InputText placeholder="Email" @bind-Value="Model.Email" />
+      <button type="submit">Submit</button>
+      <div>@msg</div>
+    </EditForm>
+  </Authorized>
+</AuthorizeView>
+
+
+
+@code {
+
+  private ApplicationUserModel Model = new ApplicationUserModel();
+  private string msg = "";
+
+
+  public class ApplicationUserModel {
+    public string Id { get; set; }
+    public string UserName { get; set; }
+    public string Email { get; set; }
+  }
+
+  async Task FormSubmitted(EditContext editContext) {
+    var HttpClient = ClientFactory.CreateClient("IdentityServerUsersHttpClient");
+    try {
+      msg = "Working hard...";
+      var x = await HttpClient.PostAsJsonAsync<ApplicationUserModel>("https://localhost:5020/Users/AddUser", (ApplicationUserModel)editContext.Model);
+      x.EnsureSuccessStatusCode();
+      var NewUsr = await x.Content.ReadFromJsonAsync<ApplicationUserModel>();
+      if (NewUsr == null)
+        throw new Exception();
+      msg = "Add User success!";
+    }
+    catch {
+      msg = "Add User failed!";
+    }
+
+  }
+
+
+}
