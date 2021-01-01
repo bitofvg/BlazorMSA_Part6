@@ -33,6 +33,25 @@ namespace BlazorClient1
             builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>().CreateClient("WebApi1Client"));
 
 
+            // Register a named HttpClient for the IdentityServer UsersController
+            builder.Services.AddHttpClient("IdentityServerUsersHttpClient")
+              .AddHttpMessageHandler(sp => {
+                var handler = sp.GetService<AuthorizationMessageHandler>()
+                  .ConfigureHandler(
+                     authorizedUrls:
+                       new[] { "https://localhost:5020" },
+                     scopes:
+                       new[] {
+                         "IdentityServer.Users.List",
+                         "IdentityServer.Users.Add"
+                       });
+                return handler;
+              });
+            builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>()
+               .CreateClient("IdentityServerUsersHttpClient"));
+
+
+
             builder.Services.AddOidcAuthentication(options =>
             {
               // load Oidc options for the Identity Server authentication.
