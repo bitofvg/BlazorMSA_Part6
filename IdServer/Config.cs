@@ -37,6 +37,12 @@ namespace IdServer {
               },
               UserClaims =  { "name", "website" }
           },
+          new ApiResource("IdentityServer.Users") {
+              Scopes = {
+                "IdentityServer.Users.Add",
+                "IdentityServer.Users.List",
+              }
+          },
       };
 
     public static IEnumerable<ApiScope> ApiScopes =>
@@ -49,6 +55,8 @@ namespace IdServer {
         new ApiScope("WApi1.Weather.Insert"),
         new ApiScope("WApi1.Weather.Update"),
         new ApiScope("WApi1.Weather.Delete"),
+        new ApiScope("IdentityServer.Users.Add"),
+        new ApiScope("IdentityServer.Users.List"),
       };
 
     public static IEnumerable<Client> Clients =>
@@ -67,7 +75,9 @@ namespace IdServer {
               "openid", "profile",
               "email", "phone",
               "my_nice_scope",
-              "WApi1.Weather.List"
+              "WApi1.Weather.List",
+              "IdentityServer.Users.Add",
+              "IdentityServer.Users.List"
             },
             RedirectUris = { "https://localhost:5001/authentication/login-callback" },
             PostLogoutRedirectUris = { "https://localhost:5001/" },
