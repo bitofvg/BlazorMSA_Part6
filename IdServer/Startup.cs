@@ -64,6 +64,14 @@ namespace IdServer {
           })
           .AddLocalApi();
 
+      services.AddAuthorization(options => {
+        options.AddPolicy("UsersManagementPolicy", policy => {
+          policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
+          policy.RequireRole("IdentityServer_Admin");
+          policy.RequireAuthenticatedUser();
+        });
+      });
+
       services.AddCors(options => { // this defines a CORS policy called ("CORSPolicy", 
         options.AddPolicy("CORSPolicy", builder => {
           builder.WithOrigins(
