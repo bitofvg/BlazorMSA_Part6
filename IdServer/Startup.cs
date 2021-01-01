@@ -38,9 +38,9 @@ namespace IdServer {
         options.Events.RaiseInformationEvents = true;
         options.Events.RaiseFailureEvents = true;
         options.Events.RaiseSuccessEvents = true;
-
         // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
         options.EmitStaticAudienceClaim = true;
+        options.Discovery.CustomEntries.Add("users_endpoint", "~/users");
       })
           .AddInMemoryIdentityResources(Config.IdentityResources)
           .AddInMemoryApiScopes(Config.ApiScopes)
@@ -61,7 +61,8 @@ namespace IdServer {
                   // set the redirect URI to https://localhost:5001/signin-google
                   options.ClientId = "copy client ID from Google here";
             options.ClientSecret = "copy client secret from Google here";
-          });
+          })
+          .AddLocalApi();
 
       services.AddCors(options => { // this defines a CORS policy called ("CORSPolicy", 
         options.AddPolicy("CORSPolicy", builder => {
