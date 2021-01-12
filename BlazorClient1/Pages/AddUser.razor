@@ -1,6 +1,7 @@
 ﻿@page "/adduser"
 @inject IHttpClientFactory ClientFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
 
 <h4><b>Add user:</b></h4>
 
@@ -36,7 +37,7 @@
     var HttpClient = ClientFactory.CreateClient("IdentityServerUsersHttpClient");
     try {
       msg = "Working hard...";
-      var x = await HttpClient.PostAsJsonAsync<ApplicationUserModel>("https://localhost:5020/Users/AddUser", (ApplicationUserModel)editContext.Model);
+      var x = await HttpClient.PostAsJsonAsync<ApplicationUserModel>(Configuration["ServicesUrls:IdServer"] + "/Users/AddUser", (ApplicationUserModel)editContext.Model);
       x.EnsureSuccessStatusCode();
       var NewUsr = await x.Content.ReadFromJsonAsync<ApplicationUserModel>();
       if (NewUsr == null)

@@ -1,13 +1,14 @@
 ﻿@page "/listusers"
 @inject IHttpClientFactory ClientFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
 
 <h4>Users with role <b>BlazorClient1_User</b></h4>
 
 
 @if (Model == null) {
   <p><em>Loading...</em></p>
-  }
+}
 else {
   <table class="table">
     <thead>
@@ -24,10 +25,10 @@ else {
           <td>@usr.UserName</td>
           <td>@usr.Email</td>
         </tr>
-        }
+      }
     </tbody>
   </table>
-  }
+}
 
 
 
@@ -49,9 +50,9 @@ else {
     var user = authState.User;
     if (user.Identity.IsAuthenticated) {
       var HttpClient = ClientFactory.CreateClient("IdentityServerUsersHttpClient");
-      Model = await HttpClient.GetFromJsonAsync<IList<ApplicationUserModel>>("https://localhost:5020/Users/ListUsers");
-      }
+      Model = await HttpClient.GetFromJsonAsync<IList<ApplicationUserModel>>(Configuration["ServicesUrls:IdServer"] + "/Users/ListUsers");
     }
+  }
 
 
 

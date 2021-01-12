@@ -25,7 +25,7 @@ namespace BlazorClient1
                 .AddHttpMessageHandler(sp => {
                   var handler = sp.GetService<AuthorizationMessageHandler>()
                                   .ConfigureHandler(
-                                    authorizedUrls: new[] { "https://localhost:5101" }, // WebApi
+                                    authorizedUrls: new[] { builder.Configuration["ServicesUrls:WebApi1"] }, // WebApi
                                     scopes: new[] { "WApi1.Weather.List", }
                                   );
                   return handler;
@@ -39,7 +39,7 @@ namespace BlazorClient1
                 var handler = sp.GetService<AuthorizationMessageHandler>()
                   .ConfigureHandler(
                      authorizedUrls:
-                       new[] { "https://localhost:5020" },
+                       new[] { builder.Configuration["ServicesUrls:IdServer"] },
                      scopes:
                        new[] {
                          "IdentityServer.Users.List",
@@ -56,6 +56,8 @@ namespace BlazorClient1
             {
               // load Oidc options for the Identity Server authentication.
               builder.Configuration.Bind("oidc", options.ProviderOptions);
+              options.ProviderOptions.Authority = builder.Configuration["ServicesUrls:IdServer"] + "/";
+              options.ProviderOptions.PostLogoutRedirectUri = builder.Configuration["ServicesUrls:BlazorClient1"] + "/";
               // get the roles from the claims named "role"
               options.UserOptions.RoleClaim = "role";
             })

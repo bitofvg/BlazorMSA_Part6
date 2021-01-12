@@ -1,6 +1,7 @@
 ﻿@page "/webapi1"
 @inject IHttpClientFactory ClientFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
 
 <h4>Weather forecast from <b>WebApi1</b></h4>
 
@@ -47,7 +48,7 @@
     if (user.Identity.IsAuthenticated) {
       var HttpClient = ClientFactory.CreateClient("WebApi1HttpClient");
       try {
-        forecasts = await HttpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:5101/WeatherForecast");
+        forecasts = await HttpClient.GetFromJsonAsync<WeatherForecast[]>(Configuration["ServicesUrls:WebApi1"] + "/WeatherForecast");
       }
       catch {
         forecasts = null;
