@@ -32,7 +32,7 @@ namespace WebApi1 {
 
       services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options => {
-          options.Authority = "https://localhost:5020";
+          options.Authority = Configuration["ServicesUrls:IdServer"];
           // the requested ApiScopes MUST belong to the ApiResource "WApi1"
           options.Audience = "WApi1";
           //To avoid Audience verify:
@@ -49,7 +49,7 @@ namespace WebApi1 {
 
       services.AddCors(options => { // this defines a CORS policy called "CORSPolicy"
         options.AddPolicy("CORSPolicy", builder => {
-          builder.WithOrigins("https://localhost:5001")
+          builder.WithOrigins(Configuration["ServicesUrls:BlazorClient1"])
                  .AllowAnyHeader();
         });
       });
