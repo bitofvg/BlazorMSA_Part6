@@ -33,6 +33,8 @@ namespace IdServer {
           .AddEntityFrameworkStores<ApplicationDbContext>()
           .AddDefaultTokenProviders();
 
+      var IdServerConfig = new Config(Configuration);
+
       var builder = services.AddIdentityServer(options => {
         options.Events.RaiseErrorEvents = true;
         options.Events.RaiseInformationEvents = true;
@@ -45,7 +47,7 @@ namespace IdServer {
           .AddInMemoryIdentityResources(Config.IdentityResources)
           .AddInMemoryApiScopes(Config.ApiScopes)
           .AddInMemoryApiResources(Config.ApiResources)
-          .AddInMemoryClients(Config.Clients)
+          .AddInMemoryClients(IdServerConfig.Clients)
           .AddAspNetIdentity<ApplicationUser>()
           .AddProfileService<ProfileService>();
 
@@ -75,8 +77,8 @@ namespace IdServer {
       services.AddCors(options => { // this defines a CORS policy called ("CORSPolicy", 
         options.AddPolicy("CORSPolicy", builder => {
           builder.WithOrigins(
-            "https://localhost:5001",
-            "https://localhost:5101"
+            Configuration["ServicesUrls:BlazorClient1"],
+            Configuration["ServicesUrls:WebApi1"]
           )
           .AllowAnyHeader();
         });

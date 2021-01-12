@@ -3,10 +3,16 @@
 
 
 using IdentityServer4.Models;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 
 namespace IdServer {
-  public static class Config {
+  public  class Config {
+
+    private IConfiguration cfg;
+    public Config(IConfiguration configuration) {
+      cfg = configuration;
+    }
     public static IEnumerable<IdentityResource> IdentityResources =>
         new IdentityResource[] {
           new IdentityResources.OpenId(),
@@ -59,7 +65,7 @@ namespace IdServer {
         new ApiScope("IdentityServer.Users.List"),
       };
 
-    public static IEnumerable<Client> Clients =>
+    public IEnumerable<Client> Clients =>
         new Client[]
         {
 
@@ -70,7 +76,7 @@ namespace IdServer {
             AllowedGrantTypes = GrantTypes.Code,
             RequirePkce = true,
             RequireClientSecret = false,
-            AllowedCorsOrigins = { "https://localhost:5001" },
+            AllowedCorsOrigins = { cfg["ServicesUrls:BlazorClient1"] },
             AllowedScopes = {
               "openid", "profile",
               "email", "phone",
@@ -79,8 +85,8 @@ namespace IdServer {
               "IdentityServer.Users.Add",
               "IdentityServer.Users.List"
             },
-            RedirectUris = { "https://localhost:5001/authentication/login-callback" },
-            PostLogoutRedirectUris = { "https://localhost:5001/" },
+            RedirectUris = { cfg["ServicesUrls:BlazorClient1"] + "/authentication/login-callback" },
+            PostLogoutRedirectUris = { cfg["ServicesUrls:BlazorClient1"] + "/" },
             Enabled = true
           },
 
