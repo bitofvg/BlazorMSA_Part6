@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Serilog;
+using BlazorDownloadFile;
 
 namespace BlazorClient1 {
   public class Program {
@@ -19,6 +20,9 @@ namespace BlazorClient1 {
 
       // adds confifuration  appsettings.{Environment}.{SubEnvironment}.json
       await AddSubEnvironmentConfiguration(builder);
+
+      //doc: https://bitofvg.wordpress.com/2021/01/29/identity-server-4-self-signed-certificates/
+      builder.Services.AddBlazorDownloadFile();
 
       builder.RootComponents.Add<App>("#app");
 

@@ -1,0 +1,82 @@
+﻿@page "/certificate"
+@inject IHttpClientFactory ClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
+@inject IBlazorDownloadFileService BlazorDownloadFileService
+@using BlazorDownloadFile;
+
+<h4><b>Download a new Self-Signed Certificate:</b></h4>
+
+<AuthorizeView Context="Ctx">
+  <NotAuthorized>
+    <p>Sorry you are not authorized to create cerificates</p>
+  </NotAuthorized>
+  <Authorized>
+    <EditForm Model="@Model" OnSubmit="@FormSubmitted">
+      <p><InputText placeholder="File Name" @bind-Value="Model.FileName" /></p>
+      <p><InputText placeholder="Password" @bind-Value="Model.Password" /></p>
+      <p><InputText placeholder="Certificate Name" @bind-Value="Model.CertificateName" /></p>
+      <p><InputText placeholder="Dns Names (comma separated)" @bind-Value="Model.DnsNames" /></p>
+      <p><InputText placeholder="Ip Addresses (comma separated)" @bind-Value="Model.IpAddresses" /></p>
+      <p><InputNumber placeholder="Validity Years" @bind-Value="Model.ValidityYears" /></p>
+      <p><button type="submit">Submit</button></p>
+      <p/>
+      <div>@msg</div>
+    </EditForm>
+  </Authorized>
+</AuthorizeView>
+
+
+
+
+
+@code {
+
+  private ViewModel Model = new ViewModel();
+  private string msg = "";
+
+
+  public class ViewModel {
+    public string FileName { get; set; } //": "BlazorMSA.IdServer.Release.pfx",
+    public string Password { get; set; } //": "5425e86d-c888-4898-b20c-fff8a5d5c78f",
+    public string CertificateName { get; set; } //": "BlazorMSA.IdServer.Release",
+    public string SubjectName { get; set; } //": "IISServer.Mydomain.net",
+    public string DnsNames { get; set; } //":  "IISServer.Mydomain.net",
+    public string IpAddresses { get; set; } //": NULL,
+    public int ValidityYears { get; set; } // ": 10
+  }
+
+  //doc: https://bitofvg.wordpress.com/2021/01/29/identity-server-4-self-signed-certificates/
+  async Task FormSubmitted(EditContext editContext) {
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+    if (user.Identity.IsAuthenticated) {
+      msg = "Working hard...";
+      var HttpClient = ClientFactory.CreateClient("IdentityServerUsersHttpClient");
+      var certRequest = new  {
+        Password = Model.Password,
+        CertificateName = Model.CertificateName,
+        SubjectName = Model.SubjectName,
+        DnsNames = Model.DnsNames.Trim().Split(","),
+        IpAddresses = Model.IpAddresses is null ? null : Model.IpAddresses.Trim().Split(","),
+        ValidityYears = Model.ValidityYears,
+      };
+
+      var x = await HttpClient.PostAsJsonAsync(
+        Configuration["ServicesUrls:IdServer"] + "/Certs/NewCertificate",
+        certRequest);
+      x.EnsureSuccessStatusCode();
+      var cert = await x.Content.ReadAsByteArrayAsync();
+
+      ////doc: https://bitofvg.wordpress.com/2021/01/29/identity-server-4-self-signed-certificates/
+      var result = await BlazorDownloadFileService.DownloadFile(Model.FileName + ".pfx", cert, "application/octet-stream");
+      msg = "... DONE!";
+    }
+    else {
+      msg = "NOT AUTHENTICATED!";
+    }
+  }
+
+
+
+}
