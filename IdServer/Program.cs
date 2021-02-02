@@ -72,6 +72,13 @@ namespace IdServer
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((context, builder) => {
+                  string subenv = context.Configuration["SubEnvironment"];
+                  if (!string.IsNullOrEmpty(subenv)) {
+                    var env = context.HostingEnvironment;
+                    builder.AddJsonFile($"appsettings.{env.EnvironmentName}.{subenv}.json", optional: false, reloadOnChange: true);
+                  }
+                })
                 .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
