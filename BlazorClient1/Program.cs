@@ -8,11 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Serilog;
 
 namespace BlazorClient1 {
   public class Program {
     public static async Task Main(string[] args) {
       var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+      LoggingConfiguration(builder);
 
       // adds confifuration  appsettings.{Environment}.{SubEnvironment}.json
       await AddSubEnvironmentConfiguration(builder);
@@ -78,7 +81,7 @@ namespace BlazorClient1 {
       await builder.Build().RunAsync();
     }
 
-
+    //Doc: https://bitofvg.wordpress.com/2021/01/22/blazor-wasm-load-appsettings-environment-subenvironment/
     private static async Task AddSubEnvironmentConfiguration(WebAssemblyHostBuilder builder) {
       var subenv = builder.Configuration["SubEnvironment"];
       var settingsfile = $"appsettings.{builder.HostEnvironment.Environment}.{subenv}.json";
@@ -92,6 +95,19 @@ namespace BlazorClient1 {
       };
     }
 
+    //Doc: https://bitofvg.wordpress.com/2021/01/27/blazor-wasm-serilog-con-log-level-dinamico/
+    private static void LoggingConfiguration(WebAssemblyHostBuilder builder) {
+      var levelSwitch = new MyLoggingLevelSwitch();
+      Log.Logger = new LoggerConfiguration()
+      .MinimumLevel.ControlledBy(levelSwitch)
+      .Enrich.FromLogContext()
+      .WriteTo.BrowserConsole()
+      .CreateLogger();
+
+      builder.Services.AddSingleton<IMyLoggingLevelSwitch>(levelSwitch);
+
+      Log.Information("Hello, browser!");
+    }
 
   }
 }

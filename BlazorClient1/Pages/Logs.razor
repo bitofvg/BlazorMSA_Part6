@@ -1,0 +1,49 @@
+﻿@page "/logs"
+@using Serilog
+@using Serilog.Events;
+@inject IMyLoggingLevelSwitch LogLevel
+
+<h4>Set a minimum log level and push Create</h4>
+<p><a href="https://bitofvg.wordpress.com/2021/01/27/blazor-wasm-serilog-con-log-level-dinamico/">Documentation</a></p>
+
+@foreach (var level in logLevels) {
+  <button class="btn btn-primary"
+          @onclick="() => SetMinimumLevel(level)">
+    Set Minimum Level to @(level)
+  </button>
+  <div />
+}
+<div />
+
+<button class="btn btn-info" @onclick="CreateLogs">Create Logs</button>
+<p />
+<p>@msg</p>
+
+@code {
+  private IEnumerable<LogEventLevel> logLevels =
+     Enum.GetValues(typeof(LogEventLevel)).Cast<LogEventLevel>();
+  private string msg = "";
+
+  private void SetMinimumLevel(LogEventLevel level) {
+    LogLevel.MinimumLevel = level;
+    msg = "";
+  }
+
+
+  private void CreateLogs() {
+    Log.Fatal("Creating logs... BEGIN");
+
+    Log.Fatal(" - Fatal OK");
+    Log.Error(" - Error OK");
+
+    Log.Warning(" - Warning OK");
+    Log.Information(" - Information OK");
+    Log.Debug(" - Debug OK:");
+    Log.Verbose(" - Verbose OK");
+
+
+    Log.Fatal("Creating logs... END");
+    msg = "Done, open the browser Console to see the logs...";
+  }
+
+}
