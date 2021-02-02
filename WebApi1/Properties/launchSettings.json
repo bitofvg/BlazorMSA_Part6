@@ -1,14 +1,52 @@
 ﻿{
+
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "https://localhost:44311",
+      "sslPort": 44320
+    }
+  },
+
   "profiles": {
-    "SelfHost": {
+
+    "SelfHosted": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:5101",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_SubEnvironment": "SelfHosted"
+      }
+    },
+
+    "IIS Express Out Of Process": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "sqlDebugging": false,
+      "ancmHostingModel": "OutOfProcess",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_SubEnvironment": "IISExpressOutOfProcess"
+      }
+    },
+
+    "IIS Express In Process": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "sqlDebugging": false,
+      "ancmHostingModel": "InProcess",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_SubEnvironment": "IISExpressInProcess"
       }
     }
+
+
   }
 }
