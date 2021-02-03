@@ -49,8 +49,8 @@ else {
     var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
     var user = authState.User;
     if (user.Identity.IsAuthenticated) {
-      var HttpClient = ClientFactory.CreateClient("IdentityServerUsersHttpClient");
-      Model = await HttpClient.GetFromJsonAsync<IList<ApplicationUserModel>>(Configuration["ServicesUrls:IdServer"] + "/Users/ListUsers");
+      var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.IdServer);
+      Model = await HttpClient.GetFromJsonAsync<IList<ApplicationUserModel>>("/Users/ListUsers");
     }
   }
 

@@ -52,7 +52,7 @@
     var user = authState.User;
     if (user.Identity.IsAuthenticated) {
       msg = "Working hard...";
-      var HttpClient = ClientFactory.CreateClient("IdentityServerUsersHttpClient");
+      var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.IdServer);
       var certRequest = new  {
         Password = Model.Password,
         CertificateName = Model.CertificateName,
@@ -63,7 +63,7 @@
       };
 
       var x = await HttpClient.PostAsJsonAsync(
-        Configuration["ServicesUrls:IdServer"] + "/Certs/NewCertificate",
+        "/Certs/NewCertificate",
         certRequest);
       x.EnsureSuccessStatusCode();
       var cert = await x.Content.ReadAsByteArrayAsync();

@@ -20,55 +20,31 @@ namespace BlazorClient1 {
 
       // adds confifuration  appsettings.{Environment}.{SubEnvironment}.json
       await AddSubEnvironmentConfiguration(builder);
+      Cfg.Init(builder.Configuration);
 
       //doc: https://bitofvg.wordpress.com/2021/01/29/identity-server-4-self-signed-certificates/
       builder.Services.AddBlazorDownloadFile();
 
       builder.RootComponents.Add<App>("#app");
 
-      //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-      // Registers a named HttpClient here for the WebApi1
-      builder.Services.AddHttpClient("LocalHttpClient", hc => hc.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
-      builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>()
-        .CreateClient("LocalHttpClient"));
+      // Registers a named HttpClient here for the BlazorClient
+      AddHttpClient(builder, Cfg.HttpClients.BlazorClient1, Cfg.ServicesUrls.BlazorClient1, null);
 
       // Register a named HttpClient for the WebApi1
-      builder.Services.AddHttpClient("WebApi1HttpClient")
-                .AddHttpMessageHandler(sp => {
-                  var handler = sp.GetService<AuthorizationMessageHandler>()
-                                  .ConfigureHandler(
-                                    authorizedUrls: new[] { builder.Configuration["ServicesUrls:WebApi1"] }, // WebApi
-                                    scopes: new[] { "WApi1.Weather.List", }
-                                  );
-                  return handler;
-                });
-      builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>()
-        .CreateClient("WebApi1Client"));
+      AddHttpClient(builder, Cfg.HttpClients.WebApi1, Cfg.ServicesUrls.WebApi1, new[] {"WApi1.Weather.List"});
 
-      // Registers a named HttpClient the IdentityServer UsersController
-      builder.Services.AddHttpClient("IdentityServerUsersHttpClient")
-        .AddHttpMessageHandler(sp => {
-          var handler = sp.GetService<AuthorizationMessageHandler>()
-            .ConfigureHandler(
-               authorizedUrls:
-                 new[] { builder.Configuration["ServicesUrls:IdServer"] },
-               scopes:
-                 new[] {
-                         "IdentityServer.Users.List",
-                         "IdentityServer.Users.Add"
-                 });
-          return handler;
+      // Registers a named HttpClient for the IdentityServer local Apis
+      AddHttpClient(builder, Cfg.HttpClients.IdServer, Cfg.ServicesUrls.IdServer,
+        new[] {
+          "IdentityServer.Users.List",
+          "IdentityServer.Users.Add"
         });
-      builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>()
-         .CreateClient("IdentityServerUsersHttpClient"));
-
-
 
       builder.Services.AddOidcAuthentication(options => {
         // load Oidc options for the Identity Server authentication.
         builder.Configuration.Bind("oidc", options.ProviderOptions);
-        options.ProviderOptions.Authority = builder.Configuration["ServicesUrls:IdServer"] + "/";
-        options.ProviderOptions.PostLogoutRedirectUri = builder.Configuration["ServicesUrls:BlazorClient1"] + "/";
+        options.ProviderOptions.Authority = Cfg.ServicesUrls.IdServer + "/";
+        options.ProviderOptions.PostLogoutRedirectUri = Cfg.ServicesUrls.BlazorClient1 + "/";
         // get the roles from the claims named "role"
         options.UserOptions.RoleClaim = "role";
       })
@@ -81,13 +57,30 @@ namespace BlazorClient1 {
         options.AddPolicy("WebApi_Delete", policy => policy.RequireClaim("WebApi1.Delete", "true"));
       });
 
-
       await builder.Build().RunAsync();
     }
 
+
+    private static void AddHttpClient(WebAssemblyHostBuilder builder, string Name, string BaseAddress, IEnumerable<string> scopes) {
+      var httpCliBuilder = builder.Services.AddHttpClient(Name, hc => hc.BaseAddress = new Uri(BaseAddress));
+      if (scopes is not null)
+        httpCliBuilder.AddHttpMessageHandler(sp => {
+          var handler = sp.GetService<AuthorizationMessageHandler>()
+            .ConfigureHandler(new[] { BaseAddress }, scopes);
+          return handler;
+        });
+      builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>()
+         .CreateClient(Name));
+    }
+
+
+
     //Doc: https://bitofvg.wordpress.com/2021/01/22/blazor-wasm-load-appsettings-environment-subenvironment/
     private static async Task AddSubEnvironmentConfiguration(WebAssemblyHostBuilder builder) {
+      Log.Information("Loading Sub-Environment....");
       var subenv = builder.Configuration["SubEnvironment"];
+      Log.Information("SubEnvironment:"+ subenv);
+
       var settingsfile = $"appsettings.{builder.HostEnvironment.Environment}.{subenv}.json";
 
       using (var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) }) {
@@ -110,7 +103,7 @@ namespace BlazorClient1 {
 
       builder.Services.AddSingleton<IMyLoggingLevelSwitch>(levelSwitch);
 
-      Log.Information("Hello, browser!");
+      Log.Information("Logging ready!");
     }
 
   }

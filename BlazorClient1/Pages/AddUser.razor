@@ -34,10 +34,10 @@
   }
 
   async Task FormSubmitted(EditContext editContext) {
-    var HttpClient = ClientFactory.CreateClient("IdentityServerUsersHttpClient");
+    var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.BlazorClient1);
     try {
       msg = "Working hard...";
-      var x = await HttpClient.PostAsJsonAsync<ApplicationUserModel>(Configuration["ServicesUrls:IdServer"] + "/Users/AddUser", (ApplicationUserModel)editContext.Model);
+      var x = await HttpClient.PostAsJsonAsync<ApplicationUserModel>("/Users/AddUser", (ApplicationUserModel)editContext.Model);
       x.EnsureSuccessStatusCode();
       var NewUsr = await x.Content.ReadFromJsonAsync<ApplicationUserModel>();
       if (NewUsr == null)

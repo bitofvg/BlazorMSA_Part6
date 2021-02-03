@@ -35,7 +35,7 @@ else {
   private WeatherForecast[] forecasts;
 
   protected override async Task OnInitializedAsync() {
-    var Http = ClientFactory.CreateClient("LocalHttpClient");
+    var Http = ClientFactory.CreateClient(Cfg.HttpClients.BlazorClient1);
     forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
   }
 

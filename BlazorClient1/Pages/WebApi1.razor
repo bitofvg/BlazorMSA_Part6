@@ -46,9 +46,9 @@
     var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
     var user = authState.User;
     if (user.Identity.IsAuthenticated) {
-      var HttpClient = ClientFactory.CreateClient("WebApi1HttpClient");
+      var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.WebApi1);
       try {
-        forecasts = await HttpClient.GetFromJsonAsync<WeatherForecast[]>(Configuration["ServicesUrls:WebApi1"] + "/WeatherForecast");
+        forecasts = await HttpClient.GetFromJsonAsync<WeatherForecast[]>("/WeatherForecast");
       }
       catch {
         forecasts = null;
