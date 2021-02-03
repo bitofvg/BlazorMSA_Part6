@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 
 namespace IdServer {
   public class Startup {
@@ -34,7 +36,6 @@ namespace IdServer {
           .AddDefaultTokenProviders();
 
       var IdServerConfig = new Config(Configuration);
-
       var builder = services.AddIdentityServer(options => {
         options.Events.RaiseErrorEvents = true;
         options.Events.RaiseInformationEvents = true;
@@ -43,16 +44,15 @@ namespace IdServer {
         // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
         options.EmitStaticAudienceClaim = true;
         options.Discovery.CustomEntries.Add("users_endpoint", "~/users");
-      })
-          .AddInMemoryIdentityResources(Config.IdentityResources)
+      });
+      builder.AddInMemoryIdentityResources(Config.IdentityResources)
           .AddInMemoryApiScopes(Config.ApiScopes)
           .AddInMemoryApiResources(Config.ApiResources)
           .AddInMemoryClients(IdServerConfig.Clients)
           .AddAspNetIdentity<ApplicationUser>()
           .AddProfileService<ProfileService>();
 
-      // not recommended for production - you need to store your key material somewhere secure
-      builder.AddDeveloperSigningCredential();
+      ManageIdentityServerCertificate(builder);
 
       services.AddAuthentication()
           .AddGoogle(options => {
@@ -102,5 +102,23 @@ namespace IdServer {
         endpoints.MapDefaultControllerRoute();
       });
     }
+
+    public void ManageIdentityServerCertificate( IIdentityServerBuilder builder) {
+      string certificateFileName = Configuration["IdentityServerCertificate:FileName"];
+      if (certificateFileName != null)
+        if (!File.Exists(certificateFileName))
+          Serilog.Log.Error($"Certificate not found: {certificateFileName}");
+        else {
+          Serilog.Log.Information("Loading certificate....");
+          var certificate = new X509Certificate2(certificateFileName, Configuration["IdentityServerCertificate:Password"]);
+          builder.AddSigningCredential(certificate);
+          Serilog.Log.Information("Using AddSigningCredential()");
+        }
+      else {
+        Serilog.Log.Warning("Using AddDeveloperSigningCredential() NOT recommended for production!");
+        builder.AddDeveloperSigningCredential();
+      }
+    }
+
   }
 }
