@@ -1,35 +1,37 @@
 ﻿@page "/listusers"
 @inject IHttpClientFactory ClientFactory
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IConfiguration Configuration
 
-<h4>Users with role <b>BlazorClient1_User</b></h4>
+<h4><b>List Users:</b></h4>
 
+<AuthorizeView Policy="@Cfg.Policies.Users_List" Context="Ctx">
+  <NotAuthorized>
+    <p>Sorry, you are not authorized to list users</p>
+  </NotAuthorized>
+  <Authorized>
+    <button class="btn btn-primary mr-3" @onclick="LoadData">List Users</button>@LoadMsg<p></p>
 
-@if (Model == null) {
-  <p><em>Loading...</em></p>
-}
-else {
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Id</th>
-        <th>UserName</th>
-        <th>Email</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach (var usr in Model) {
-        <tr>
-          <td>@usr.Id</td>
-          <td>@usr.UserName</td>
-          <td>@usr.Email</td>
-        </tr>
+    @if (Model != null) {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>UserName</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var usr in Model) {
+              <tr>
+                <td>@usr.Id</td>
+                <td>@usr.UserName</td>
+                <td>@usr.Email</td>
+              </tr>
+            }
+          </tbody>
+        </table>
       }
-    </tbody>
-  </table>
-}
-
+  </Authorized>
+</AuthorizeView>
 
 
 
@@ -38,6 +40,8 @@ else {
 
   private IList<ApplicationUserModel> Model = null;
 
+  private string LoadMsg { get; set; }
+
   public class ApplicationUserModel {
     public string Id { get; set; }
     public string UserName { get; set; }
@@ -45,13 +49,17 @@ else {
   }
 
 
-  protected override async Task OnInitializedAsync() {
-    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-    var user = authState.User;
-    if (user.Identity.IsAuthenticated) {
-      var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.IdServer);
-      Model = await HttpClient.GetFromJsonAsync<IList<ApplicationUserModel>>("/Users/ListUsers");
+  protected  async Task LoadData() {
+    LoadMsg = "Working hard... ";
+    var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.IdServer);
+    try {
+      Model = await HttpClient.GetFromJsonAsync<IList<ApplicationUserModel>>("/Users/ListBlazorClient1Users");
+      LoadMsg = "...DONE!";
     }
+    catch {
+      Model = null;
+      LoadMsg = "...ERROR!";
+    };
   }
 
 

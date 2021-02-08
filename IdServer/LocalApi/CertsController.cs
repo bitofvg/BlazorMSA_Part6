@@ -22,10 +22,12 @@ using static IdServer.SelfSignedServerCertificate;
 namespace IdServer.Controllers {
   [ApiController]
   [Route("[controller]/[action]")]
-  [Authorize(Policy = "UsersManagementPolicy")]
+  [Authorize]
+
   public class CertsController : ControllerBase {
 
     [HttpPost]
+    [Authorize(Policy = Cfg.Policies.CertificatesManagement_Create)]
     public IActionResult NewCertificate(NewCertificate cert) {
       var ssc = SelfSignedServerCertificate.Create(cert);
       return File(ssc, "application/octet-stream");

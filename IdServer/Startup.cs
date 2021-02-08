@@ -5,6 +5,7 @@
 using IdentityServer4;
 using IdServer.Data;
 using IdServer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -12,8 +13,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SharedLib;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+
 
 namespace IdServer {
   public class Startup {
@@ -23,6 +26,7 @@ namespace IdServer {
     public Startup(IWebHostEnvironment environment, IConfiguration configuration) {
       Environment = environment;
       Configuration = configuration;
+      Cfg.Init(Configuration);
     }
 
     public void ConfigureServices(IServiceCollection services) {
@@ -35,7 +39,6 @@ namespace IdServer {
           .AddEntityFrameworkStores<ApplicationDbContext>()
           .AddDefaultTokenProviders();
 
-      var IdServerConfig = new Config(Configuration);
       var builder = services.AddIdentityServer(options => {
         options.Events.RaiseErrorEvents = true;
         options.Events.RaiseInformationEvents = true;
@@ -45,10 +48,10 @@ namespace IdServer {
         options.EmitStaticAudienceClaim = true;
         options.Discovery.CustomEntries.Add("users_endpoint", "~/users");
       });
-      builder.AddInMemoryIdentityResources(Config.IdentityResources)
-          .AddInMemoryApiScopes(Config.ApiScopes)
-          .AddInMemoryApiResources(Config.ApiResources)
-          .AddInMemoryClients(IdServerConfig.Clients)
+      builder.AddInMemoryIdentityResources(Cfg.IdCfg.IdentityResources)
+          .AddInMemoryApiScopes(Cfg.IdCfg.ApiScopes)
+          .AddInMemoryApiResources(Cfg.IdCfg.ApiResources)
+          .AddInMemoryClients(Cfg.IdCfg.Clients)
           .AddAspNetIdentity<ApplicationUser>()
           .AddProfileService<ProfileService>();
 
@@ -61,24 +64,21 @@ namespace IdServer {
                   // register your IdentityServer with Google at https://console.developers.google.com
                   // enable the Google+ API
                   // set the redirect URI to https://localhost:5001/signin-google
-                  options.ClientId = "copy client ID from Google here";
+            options.ClientId = "copy client ID from Google here";
             options.ClientSecret = "copy client secret from Google here";
           })
           .AddLocalApi();
 
+
       services.AddAuthorization(options => {
-        options.AddPolicy("UsersManagementPolicy", policy => {
-          policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
-          policy.RequireRole("IdentityServer_Admin");
-          policy.RequireAuthenticatedUser();
-        });
+        AppPolicies(options);
       });
 
       services.AddCors(options => { // this defines a CORS policy called ("CORSPolicy", 
-        options.AddPolicy("CORSPolicy", builder => {
+        options.AddPolicy(Cfg.CORSPolicy, builder => {
           builder.WithOrigins(
-            Configuration["ServicesUrls:BlazorClient1"],
-            Configuration["ServicesUrls:WebApi1"]
+            Cfg.ServicesUrls.BlazorClient1,
+            Cfg.ServicesUrls.WebApi1
           )
           .AllowAnyHeader();
         });
@@ -95,7 +95,7 @@ namespace IdServer {
       app.UseStaticFiles();
 
       app.UseRouting();
-      app.UseCors("CORSPolicy"); // This MUST be placed after "app.UseRouting();"
+      app.UseCors(Cfg.CORSPolicy); // This MUST be placed after "app.UseRouting();"
       app.UseIdentityServer();
       app.UseAuthorization();
       app.UseEndpoints(endpoints => {
@@ -103,14 +103,16 @@ namespace IdServer {
       });
     }
 
-    public void ManageIdentityServerCertificate( IIdentityServerBuilder builder) {
-      string certificateFileName = Configuration["IdentityServerCertificate:FileName"];
+
+
+    private static void ManageIdentityServerCertificate( IIdentityServerBuilder builder) {
+      string certificateFileName = Cfg.IdentityServerCertificate.FileName;
       if (certificateFileName != null)
         if (!File.Exists(certificateFileName))
           Serilog.Log.Error($"Certificate not found: {certificateFileName}");
         else {
           Serilog.Log.Information("Loading certificate....");
-          var certificate = new X509Certificate2(certificateFileName, Configuration["IdentityServerCertificate:Password"]);
+          var certificate = new X509Certificate2(certificateFileName, Cfg.IdentityServerCertificate.Password);
           builder.AddSigningCredential(certificate);
           Serilog.Log.Information("Using AddSigningCredential()");
         }
@@ -119,6 +121,37 @@ namespace IdServer {
         builder.AddDeveloperSigningCredential();
       }
     }
+
+
+  private static void AppPolicies(AuthorizationOptions options) {
+
+      options.AddPolicy(Cfg.Policies.UsersManagement_List, policy => {
+        policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
+        //policy.RequireRole(IdNames.Roles.IdServer_User);
+        policy.RequireScope(IdNames.Scopes.IdServerUsersRead); //needs pakage: IdentityServer4.AccessTokenValidation
+        policy.RequireClaim(IdNames.Claims.IdServer_Users_List);
+        policy.RequireAuthenticatedUser();
+      });
+
+      options.AddPolicy(Cfg.Policies.UsersManagement_Add, policy => {
+        policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
+        //policy.RequireRole(IdNames.Roles.IdServer_Admin);
+        policy.RequireScope(IdNames.Scopes.IdServerUsersWrite); //needs pakage: IdentityServer4.AccessTokenValidation
+        policy.RequireClaim(IdNames.Claims.IdServer_Users_Add);
+        policy.RequireAuthenticatedUser();
+      });
+
+
+      options.AddPolicy(Cfg.Policies.CertificatesManagement_Create, policy => {
+        policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
+        //policy.RequireRole(IdNames.Roles.IdServer_Admin);
+        policy.RequireScope(IdNames.Scopes.IdServerCertificates); //needs pakage: IdentityServer4.AccessTokenValidation
+        policy.RequireClaim(IdNames.Claims.IdServer_Cerificate_Create);
+        policy.RequireAuthenticatedUser();
+      });
+    }
+
+
 
   }
 }

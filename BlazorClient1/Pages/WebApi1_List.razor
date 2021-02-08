@@ -1,0 +1,60 @@
+﻿@page "/webapi1_list"
+@inject IHttpClientFactory ClientFactory
+
+<h4>Weather forecast from <b>WebApi1</b></h4>
+
+<AuthorizeView Policy=@Cfg.Policies.WApi1_Weather_List>
+  <NotAuthorized>
+    <p>Sorry you are not authorized to WApi1_Weather_List</p>
+  </NotAuthorized>
+  <Authorized>
+    <button class="btn btn-primary mr-3" @onclick="LoadData">List Weather</button>@LoadMsg<p></p>
+    @if (forecasts != null) {
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Temp. (C)</th>
+            <th>Temp. (F)</th>
+            <th>Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var forecast in forecasts) {
+            <tr>
+              <td>@forecast.Date.ToShortDateString()</td>
+              <td>@forecast.TemperatureC</td>
+              <td>@forecast.TemperatureF</td>
+              <td>@forecast.Summary</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </Authorized>
+</AuthorizeView>
+
+
+@code {
+  private WeatherForecast[] forecasts;
+  private string LoadMsg { get; set; }
+
+
+  protected async Task LoadData() {
+    LoadMsg = "Working hard... ";
+
+    var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.WebApi1);
+
+    try {
+      forecasts = await HttpClient.GetFromJsonAsync<WeatherForecast[]>("/WeatherForecast/Get");
+      LoadMsg = "...DONE!";
+    }
+    catch {
+      forecasts = null;
+      LoadMsg = "...ERROR!";
+    };
+  }
+
+
+
+}

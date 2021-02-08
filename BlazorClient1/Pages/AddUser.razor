@@ -5,9 +5,9 @@
 
 <h4><b>Add user:</b></h4>
 
-<AuthorizeView Context="Ctx">
+<AuthorizeView Policy="@Cfg.Policies.Users_Add" Context="Ctx">
   <NotAuthorized>
-    <p>Sorry you are not authorized to localApi1</p>
+    <p>Sorry, you are not authorized to add a user</p>
   </NotAuthorized>
   <Authorized>
     <EditForm Model="@Model" OnSubmit="@FormSubmitted">
@@ -37,12 +37,12 @@
     var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.BlazorClient1);
     try {
       msg = "Working hard...";
-      var x = await HttpClient.PostAsJsonAsync<ApplicationUserModel>("/Users/AddUser", (ApplicationUserModel)editContext.Model);
-      x.EnsureSuccessStatusCode();
-      var NewUsr = await x.Content.ReadFromJsonAsync<ApplicationUserModel>();
+      var response = await HttpClient.PostAsJsonAsync<ApplicationUserModel>("/Users/AddBlazorClient1User", (ApplicationUserModel)editContext.Model);
+      response.EnsureSuccessStatusCode();
+      var NewUsr = await response.Content.ReadFromJsonAsync<ApplicationUserModel>();
       if (NewUsr == null)
         throw new Exception();
-      msg = "Add User success!";
+      msg = "Add User success! The password is: Pass123$";
     }
     catch {
       msg = "Add User failed!";

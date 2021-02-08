@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using SharedLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace WebApi1 {
   public class Startup {
     public Startup(IConfiguration configuration) {
       Configuration = configuration;
+      Cfg.Init(Configuration);
     }
 
     public IConfiguration Configuration { get; }
@@ -32,24 +34,30 @@ namespace WebApi1 {
 
       services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options => {
-          options.Authority = Configuration["ServicesUrls:IdServer"];
+          options.Authority = Cfg.ServicesUrls.IdServer;
           // the requested ApiScopes MUST belong to the ApiResource "WApi1"
-          options.Audience = "WApi1";
+          options.Audience = IdNames.ApiRes.WApi;
           //To avoid Audience verify:
-          //options.TokenValidationParameters = new TokenValidationParameters {
-          //  ValidateAudience = false
-          //};
+          //options.TokenValidationParameters = new TokenValidationParameters { ValidateAudience = false };
         });
 
       services.AddAuthorization(options => {
-        options.AddPolicy("ListPolicy", policyAdmin => {
-          policyAdmin.RequireScope("WApi1.Weather.List");
+        options.AddPolicy(Cfg.Policies.WeatherList, policyAdmin => {
+          policyAdmin.RequireScope(IdNames.Scopes.WApi1WeatherRead);
+          policyAdmin.RequireClaim(IdNames.Claims.WApi1_Weather_List);
+        });
+      });
+      services.AddAuthorization(options => {
+        options.AddPolicy(Cfg.Policies.WeatherGetById, policyAdmin => {
+          policyAdmin.RequireScope(IdNames.Scopes.WApi1WeatherRead);
+          policyAdmin.RequireClaim(IdNames.Claims.WApi1_Weather_GetById);
         });
       });
 
+
       services.AddCors(options => { // this defines a CORS policy called "CORSPolicy"
-        options.AddPolicy("CORSPolicy", builder => {
-          builder.WithOrigins(Configuration["ServicesUrls:BlazorClient1"])
+        options.AddPolicy(Cfg.CORSPolicy, builder => {
+          builder.WithOrigins(Cfg.ServicesUrls.BlazorClient1)
                  .AllowAnyHeader();
         });
       });
@@ -71,7 +79,7 @@ namespace WebApi1 {
 
       app.UseRouting();
 
-      app.UseCors("CORSPolicy"); // This MUST be placed after "app.UseRouting();"
+      app.UseCors(Cfg.CORSPolicy); // This MUST be placed after "app.UseRouting();"
 
       //authentication will be performed automatically on every call
       app.UseAuthentication();

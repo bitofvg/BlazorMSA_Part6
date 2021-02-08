@@ -10,6 +10,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Serilog;
 using BlazorDownloadFile;
+using SharedLib;
+
 
 namespace BlazorClient1 {
   public class Program {
@@ -31,18 +33,29 @@ namespace BlazorClient1 {
       AddHttpClient(builder, Cfg.HttpClients.BlazorClient1, Cfg.ServicesUrls.BlazorClient1, null);
 
       // Register a named HttpClient for the WebApi1
-      AddHttpClient(builder, Cfg.HttpClients.WebApi1, Cfg.ServicesUrls.WebApi1, new[] {"WApi1.Weather.List"});
+      AddHttpClient(builder, Cfg.HttpClients.WebApi1, Cfg.ServicesUrls.WebApi1, 
+        scopes: new[] {
+          IdNames.Scopes.WApi1WeatherRead
+        });
 
       // Registers a named HttpClient for the IdentityServer local Apis
       AddHttpClient(builder, Cfg.HttpClients.IdServer, Cfg.ServicesUrls.IdServer,
-        new[] {
-          "IdentityServer.Users.List",
-          "IdentityServer.Users.Add"
+        scopes: new[] {
+          IdNames.Scopes.IdServerUsersRead,
+          IdNames.Scopes.IdServerUsersWrite,
+          IdNames.Scopes.IdServerCertificates
         });
 
       builder.Services.AddOidcAuthentication(options => {
-        // load Oidc options for the Identity Server authentication.
-        builder.Configuration.Bind("oidc", options.ProviderOptions);
+        // load Oidc options for the Identity Server authentication from appsettings.json.
+        //builder.Configuration.Bind("oidc", options.ProviderOptions); 
+        options.ProviderOptions.ClientId = IdNames.Clients.BlazorClient1;
+        options.ProviderOptions.ResponseType = "code";
+        options.ProviderOptions.DefaultScopes.Add(IdNames.OidcStandardScopes.OpenId);
+        options.ProviderOptions.DefaultScopes.Add(IdNames.OidcStandardScopes.Profile);
+        options.ProviderOptions.DefaultScopes.Add(IdNames.OidcStandardScopes.Email);
+        options.ProviderOptions.DefaultScopes.Add(IdNames.OidcStandardScopes.Phone);
+        options.ProviderOptions.DefaultScopes.Add(IdNames.IdResources.Gender);
         options.ProviderOptions.Authority = Cfg.ServicesUrls.IdServer + "/";
         options.ProviderOptions.PostLogoutRedirectUri = Cfg.ServicesUrls.BlazorClient1 + "/";
         // get the roles from the claims named "role"
@@ -50,23 +63,34 @@ namespace BlazorClient1 {
       })
       .AddAccountClaimsPrincipalFactory<CustomUserFactory>();
 
-
       builder.Services.AddAuthorizationCore(options => {
-        options.AddPolicy("WebApi_List", policy => policy.RequireClaim("WebApi1.List", "true"));
-        options.AddPolicy("WebApi_Update", policy => policy.RequireClaim("WebApi1.Update", "true"));
-        options.AddPolicy("WebApi_Delete", policy => policy.RequireClaim("WebApi1.Delete", "true"));
+        options.AddPolicy(Cfg.Policies.WApi1_Weather_List, policy => 
+          policy.RequireClaim(IdNames.Claims.WApi1_Weather_List, "true"));
+        options.AddPolicy(Cfg.Policies.WApi1_Weather_GetById, policy =>
+          policy.RequireClaim(IdNames.Claims.WApi1_Weather_GetById, "true"));
+        options.AddPolicy(Cfg.Policies.Users_Add, policy =>
+          policy.RequireClaim(IdNames.Claims.IdServer_Users_Add, "true"));
+        options.AddPolicy(Cfg.Policies.Users_List, policy =>
+          policy.RequireClaim(IdNames.Claims.IdServer_Users_List, "true"));
+        options.AddPolicy(Cfg.Policies.Cerificate_Create, policy =>
+          policy.RequireClaim(IdNames.Claims.IdServer_Cerificate_Create, "true"));
+
       });
 
       await builder.Build().RunAsync();
     }
 
 
+    //https://docs.microsoft.com/it-it/aspnet/core/blazor/security/webassembly/additional-scenarios?view=aspnetcore-5.0#custom-authorizationmessagehandler-class
+    //https://bitofvg.wordpress.com/2020/12/16/blazormsa-part-3-webapi/
     private static void AddHttpClient(WebAssemblyHostBuilder builder, string Name, string BaseAddress, IEnumerable<string> scopes) {
       var httpCliBuilder = builder.Services.AddHttpClient(Name, hc => hc.BaseAddress = new Uri(BaseAddress));
       if (scopes is not null)
         httpCliBuilder.AddHttpMessageHandler(sp => {
           var handler = sp.GetService<AuthorizationMessageHandler>()
-            .ConfigureHandler(new[] { BaseAddress }, scopes);
+            .ConfigureHandler(
+               authorizedUrls: new[] { BaseAddress },
+               scopes: scopes);
           return handler;
         });
       builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>()

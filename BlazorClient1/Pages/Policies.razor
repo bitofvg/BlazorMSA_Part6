@@ -1,47 +1,52 @@
 ﻿@page "/policies"
 
 
-  <AuthorizeView Policy="WebApi_List">
-    <Authorized>
-      <p>I can call List from WebApi1</p>
-    </Authorized>
-    <NotAuthorized>
-      <p>I can't call List from WebApi1</p>
-    </NotAuthorized>
+<p>
+  Role: <b>@IdNames.Roles.BlazorClient1_Admin</b>=
+  <AuthorizeView Roles=@IdNames.Roles.BlazorClient1_Admin>
+    <Authorized><b>TRUE</b></Authorized><NotAuthorized><b>FALSE</b></NotAuthorized>
   </AuthorizeView>
+</p>
 
-  <AuthorizeView Policy="WebApi_Update">
-    <Authorized>
-      <p>I can call Update from WebApi1</p>
-    </Authorized>
-    <NotAuthorized>
-      <p>I can't call Update from WebApi1</p>
-    </NotAuthorized>
+<p>
+  Role: <b>@IdNames.Roles.BlazorClient1_User</b>=
+  <AuthorizeView Roles=@IdNames.Roles.BlazorClient1_User>
+    <Authorized><b>TRUE</b></Authorized><NotAuthorized><b>FALSE</b></NotAuthorized>
   </AuthorizeView>
+</p>
 
-  <AuthorizeView Roles="BlazorClient1_User" Policy="WebApi_List">
-    <Authorized>
-      <p>I'm a BlazorClient1_User AND I can call List from WebApi1</p>
-    </Authorized>
-    <NotAuthorized>
-      <p>I'm NOT a BlazorClient1_User OR I can't call List from WebApi1</p>
-    </NotAuthorized>
+<p>
+  Role: <b>@IdNames.Roles.IdServer_Admin</b>=
+  <AuthorizeView Roles=@IdNames.Roles.IdServer_Admin>
+    <Authorized><b>TRUE</b></Authorized><NotAuthorized><b>FALSE</b></NotAuthorized>
   </AuthorizeView>
+</p>
 
-  <AuthorizeView Roles="BlazorClient1_Admin" Policy="WebApi_Update">
-    <Authorized>
-      <p>I'm a BlazorClient1_Admin AND I can call Update from WebApi1</p>
-    </Authorized>
-    <NotAuthorized>
-      <p>I'm NOT a BlazorClient1_Admin OR I can't call Update from WebApi1</p>
-    </NotAuthorized>
+<p>
+  Role: <b>@IdNames.Roles.IdServer_User</b>=
+  <AuthorizeView Roles=@IdNames.Roles.IdServer_User>
+    <Authorized><b>TRUE</b></Authorized><NotAuthorized><b>FALSE</b></NotAuthorized>
   </AuthorizeView>
+</p>
 
-  <AuthorizeView Roles="BlazorClient1_Admin, BlazorClient1_User" Policy="WebApi_Delete">
-    <Authorized>
-      <p>I'm a (BlazorClient1_Admin OR BlazorClient1_User) AND I can call Delete from WebApi1</p>
-    </Authorized>
-    <NotAuthorized>
-      <p>I'm NOT a (BlazorClient1_Admin AND BlazorClient1_User) OR I can't call Delete from WebApi1</p>
-    </NotAuthorized>
+<p>
+  Roles: <b>@IdNames.Roles.BlazorClient1_Admin</b> AND <b>@IdNames.Roles.BlazorClient1_User</b>= 
+  <AuthorizeView Roles="@(IdNames.Roles.BlazorClient1_Admin + "," + IdNames.Roles.BlazorClient1_User)">
+    <Authorized><b>TRUE</b></Authorized><NotAuthorized><b>FALSE</b></NotAuthorized>
   </AuthorizeView>
+</p>
+
+<p>
+  Policy: <b>@Cfg.Policies.WApi1_Weather_List</b> (Claim: <b>@IdNames.Claims.WApi1_Weather_List</b>)=
+  <AuthorizeView Policy=@Cfg.Policies.WApi1_Weather_List>
+    <Authorized><b>TRUE</b></Authorized><NotAuthorized><b>FALSE</b></NotAuthorized>
+  </AuthorizeView>
+</p>
+
+<p>
+  Role: <b>@IdNames.Roles.BlazorClient1_User</b> AND Policy: <b>@Cfg.Policies.Users_Add</b> (Claim: <b>@IdNames.Claims.IdServer_Users_Add</b> )=
+  <AuthorizeView Roles=@IdNames.Roles.BlazorClient1_User Policy=@Cfg.Policies.Users_Add>
+    <Authorized><b>TRUE</b></Authorized><NotAuthorized><b>FALSE</b></NotAuthorized>
+  </AuthorizeView>
+</p>
+

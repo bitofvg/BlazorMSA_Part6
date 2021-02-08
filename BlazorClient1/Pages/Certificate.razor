@@ -1,15 +1,13 @@
 ﻿@page "/certificate"
 @inject IHttpClientFactory ClientFactory
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IConfiguration Configuration
 @inject IBlazorDownloadFileService BlazorDownloadFileService
 @using BlazorDownloadFile;
 
 <h4><b>Download a new Self-Signed Certificate:</b></h4>
 
-<AuthorizeView Context="Ctx">
+<AuthorizeView Policy="@Cfg.Policies.Cerificate_Create" Context="Ctx">
   <NotAuthorized>
-    <p>Sorry you are not authorized to create cerificates</p>
+    <p>Sorry, you are not authorized to create cerificates</p>
   </NotAuthorized>
   <Authorized>
     <EditForm Model="@Model" OnSubmit="@FormSubmitted">
@@ -48,33 +46,29 @@
 
   //doc: https://bitofvg.wordpress.com/2021/01/29/identity-server-4-self-signed-certificates/
   async Task FormSubmitted(EditContext editContext) {
-    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-    var user = authState.User;
-    if (user.Identity.IsAuthenticated) {
-      msg = "Working hard...";
-      var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.IdServer);
-      var certRequest = new  {
-        Password = Model.Password,
-        CertificateName = Model.CertificateName,
-        SubjectName = Model.SubjectName,
-        DnsNames = Model.DnsNames.Trim().Split(","),
-        IpAddresses = Model.IpAddresses is null ? null : Model.IpAddresses.Trim().Split(","),
-        ValidityYears = Model.ValidityYears,
-      };
-
-      var x = await HttpClient.PostAsJsonAsync(
-        "/Certs/NewCertificate",
-        certRequest);
-      x.EnsureSuccessStatusCode();
-      var cert = await x.Content.ReadAsByteArrayAsync();
-
-      ////doc: https://bitofvg.wordpress.com/2021/01/29/identity-server-4-self-signed-certificates/
-      var result = await BlazorDownloadFileService.DownloadFile(Model.FileName + ".pfx", cert, "application/octet-stream");
-      msg = "... DONE!";
+    msg = "Working hard...";
+    var HttpClient = ClientFactory.CreateClient(Cfg.HttpClients.IdServer);
+    var certRequest = new  {
+      Password = Model.Password,
+      CertificateName = Model.CertificateName,
+      SubjectName = Model.SubjectName,
+      DnsNames = Model.DnsNames.Trim().Split(","),
+      IpAddresses = Model.IpAddresses is null ? null : Model.IpAddresses.Trim().Split(","),
+      ValidityYears = Model.ValidityYears,
+    };
+    HttpResponseMessage response=null;
+    try {
+      response = await HttpClient.PostAsJsonAsync("/Certs/NewCertificate",certRequest);
+      response.EnsureSuccessStatusCode();
     }
-    else {
-      msg = "NOT AUTHENTICATED!";
+    catch {
+      msg = "... ERROR!";
     }
+    var cert = await response.Content.ReadAsByteArrayAsync();
+
+    //doc: https://bitofvg.wordpress.com/2021/01/29/identity-server-4-self-signed-certificates/
+    var result = await BlazorDownloadFileService.DownloadFile(Model.FileName + ".pfx", cert, "application/octet-stream");
+    msg = "... DONE!";
   }
 
 
