@@ -67,7 +67,8 @@ namespace IdServer {
             options.ClientId = "copy client ID from Google here";
             options.ClientSecret = "copy client secret from Google here";
           })
-          .AddLocalApi();
+          .AddLocalApi()
+          .AddNegotiate();
 
 
       services.AddAuthorization(options => {
