@@ -3,6 +3,7 @@
 
 
 using IdentityServer4;
+using IdentityServer4.Configuration;
 using IdServer.Data;
 using IdServer.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -40,6 +41,9 @@ namespace IdServer {
           .AddDefaultTokenProviders();
 
       var builder = services.AddIdentityServer(options => {
+        //options.UserInteraction = new UserInteractionOptions() {
+        //  //LoginUrl = "/Negotiate/Challenge", // if you want to login using Windows Auth directly
+        //};
         options.Events.RaiseErrorEvents = true;
         options.Events.RaiseInformationEvents = true;
         options.Events.RaiseFailureEvents = true;

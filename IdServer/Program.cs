@@ -71,7 +71,7 @@ namespace IdServer
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+            Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, builder) => {
                   string subenv = context.Configuration["SubEnvironment"];
                   if (!string.IsNullOrEmpty(subenv)) {
