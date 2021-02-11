@@ -5,6 +5,10 @@ namespace SharedLib {
 
   public static class IdNames {
 
+    public static class AuthSchemes {
+      public const string Negotiate = "Negotiate";
+    }
+
     public static class OidcStandardScopes {
       public const string OpenId = "openid";
       public const string Profile = "profile";

@@ -1,4 +1,5 @@
 @model LoginViewModel
+@using SharedLib
 
 <div class="login-page">
     <div class="lead">
@@ -65,7 +66,7 @@
                       <ul class="list-inline">
                           <li class="list-inline-item">
                             <a class="btn btn-secondary"
-                               asp-controller="Negotiate"
+                               asp-controller=@IdNames.AuthSchemes.Negotiate
                                asp-action="Challenge"
                                asp-route-returnUrl="@Model.ReturnUrl">
                               Windows Login

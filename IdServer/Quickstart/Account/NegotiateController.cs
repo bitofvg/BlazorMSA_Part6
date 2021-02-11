@@ -13,8 +13,7 @@ using SharedLib;
 namespace Host.Quickstart.Account {
 
   //https://identityserver4.readthedocs.io/en/latest/topics/windows.html?highlight=windows
-//  [Authorize(AuthenticationSchemes = NegotiateDefaults.AuthenticationScheme)]
-  [Authorize(AuthenticationSchemes = "Negotiate")]
+  [Authorize(AuthenticationSchemes = IdNames.AuthSchemes.Negotiate)]
   public class NegotiateController : Controller {
     [HttpGet]
     public async Task<IActionResult> Challenge(string returnUrl) {
@@ -31,11 +30,11 @@ namespace Host.Quickstart.Account {
           Items =
             {
                 { "returnUrl", returnUrl },
-                { "scheme", "Negotiate" },
+                { "scheme", IdNames.AuthSchemes.Negotiate },
             }
         };
 
-        var id = new ClaimsIdentity("Negotiate");
+        var id = new ClaimsIdentity(IdNames.AuthSchemes.Negotiate);
 
         // the sid is a good sub value
         id.AddClaim(new Claim(JwtClaimTypes.Subject, wp.FindFirst(ClaimTypes.PrimarySid).Value));
